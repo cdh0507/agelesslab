@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경력 90분 - AI & 30년 은퇴 전문가 1:1 숏폼 자문 플랫폼</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icon CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PeerJS CDN for Real Multi-Device Online Video Call -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { 
+            font-family: 'Pretendard', sans-serif;
+            word-break: keep-all; /* 한글 단어 단위 줄바꿈 처리 */
+        }
+        /* Futuristic Glow & Glassmorphism Custom Style */
+        .neon-border {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.25), inset 0 0 10px rgba(6, 182, 212, 0.15);
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+        .neon-glow-violet {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen bg-grid-pattern flex flex-col justify-between">
+
+    <!-- Futuristic Header / Navigation -->
+    <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 shadow-lg shadow-cyan-950/20">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black px-3 py-1 rounded-lg text-lg tracking-wider neon-glow-cyan">90m</span>
+                <span class="font-bold text-lg md:text-xl text-white tracking-tight flex items-center gap-2">
+                    경력 90분 <span class="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800 px-2 py-0.5 rounded-full font-semibold">AI NEXT-GEN</span>
+                </span>
+            </div>
+            <nav class="hidden md:flex gap-6 text-xs font-semibold text-slate-400">
+                <button onclick="switchTab('prototype')" class="nav-btn active text-cyan-400 font-bold border-b-2 border-cyan-400 pb-1" id="nav-proto">앱 프로토타입 체험</button>
+                <button onclick="switchTab('strategy')" class="nav-btn hover:text-cyan-400 pb-1" id="nav-strat">7P & 비즈니스 모델(BMC)</button>
+                <button onclick="switchTab('calculator')" class="nav-btn hover:text-cyan-400 pb-1" id="nav-calc">BEP & CPC 시뮬레이터</button>
+            </nav>
+            
+            <div class="flex items-center gap-2" id="auth-header-container">
+                <button onclick="openAuthModal('login')" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-bold px-3 py-1.5 rounded-lg transition">로그인</button>
+                <button onclick="openAuthModal('signup')" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg transition neon-glow-cyan">멘티 회원가입</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- AUTH MODAL (Mentee Only Signup) -->
+    <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-cyan-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl relative neon-border">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex border-b border-slate-800 mb-6">
+                <button id="tab-auth-login" onclick="switchAuthTab('login')" class="w-1/2 pb-3 font-bold text-xs text-cyan-400 border-b-2 border-cyan-400">로그인</button>
+                <button id="tab-auth-signup" onclick="switchAuthTab('signup')" class="w-1/2 pb-3 font-bold text-xs text-slate-500">멘티 회원가입</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">이메일 계정</label>
+                    <input type="email" id="login-email" required placeholder="user@example.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">비밀번호</label>
+                    <input type="password" id="login-pw" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-cyan-500">
+                </div>
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-lg text-xs transition neon-glow-cyan">로그인하기</button>
+            </form>
+
+            <!-- SIGNUP FORM (Mentee Only) -->
+            <form id="form-signup" onsubmit="handleSignup(event)" class="space-y-4 text-xs hidden">
+                <div class="bg-cyan-950/50 border border-cyan-800/80 p-3 rounded-lg text-cyan-300 font-bold text-center">
+                    <i class="fa-solid fa-user-graduate mr-1"></i> 청년 & 취준생 멘티 전용 회원가입
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">이름</label>
+                    <input type="text" id="signup-name" required placeholder="이현우" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">이메일 주소</label>
+                    <input type="email" id="signup-email" required placeholder="user@example.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-300 mb-1">비밀번호 설정</label>
+                    <input type="password" id="signup-pw" required placeholder="8자리 이상" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-cyan-500">
+                </div>
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-lg text-xs transition neon-glow-cyan">멘티 등록 완료</button>
+            </form>
+        </div>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+        <!-- TAB 1: INTERACTIVE PROTOTYPE -->
+        <section id="tab-prototype" class="tab-content block">
+            
+            <!-- HERO BANNER (NO Awkward Line Wrapping) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 text-white shadow-2xl mb-8 relative overflow-hidden backdrop-blur-xl">
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl"></div>
+                <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl"></div>
+                
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-block bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono text-[11px] px-3 py-1 rounded-full mb-2">TARGET: AGE 22-32 CAREER SEEKERS</span>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight leading-snug text-white">
+                        현직 감각 그대로, <span class="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">은퇴 1~3년 차 베테랑</span>의 1:1 실무 피드백
+                    </h1>
+                    <p class="text-slate-400 text-xs sm:text-sm mt-2">원론적인 대답은 제외합니다. 90분 만에 완료하는 실전 직무·면접 솔루션.</p>
+                </div>
+            </div>
+
+            <!-- SIMULATOR CONTAINER -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 backdrop-blur-md">
+                
+                <!-- Left Navigation Panel -->
+                <div class="lg:col-span-4 bg-slate-950/60 border-b lg:border-b-0 lg:border-r border-slate-800 p-6">
+                    <h2 class="text-xs font-mono font-bold text-cyan-400 tracking-wider uppercase mb-4 flex items-center justify-between">
+                        <span><i class="fa-solid fa-network-wired mr-2"></i>멘토링 시뮬레이션</span>
+                        <span class="text-[10px] bg-slate-900 text-slate-400 border border-slate-800 px-2 py-0.5 rounded-full" id="step-indicator">STEP 1 / 4</span>
+                    </h2>
+                    
+                    <div class="space-y-3 text-xs">
+                        <div id="step-btn-1" onclick="jumpToStep(1)" class="step-btn p-3 rounded-xl border border-cyan-500/50 bg-cyan-950/30 text-cyan-300 font-bold cursor-pointer transition neon-border">
+                            <p class="text-[10px] text-cyan-400 font-mono">STEP 01</p>
+                            <p class="text-sm">분야 선택 & 맞춤 설문</p>
+                        </div>
+                        <div id="step-btn-2" onclick="jumpToStep(2)" class="step-btn p-3 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-500 font-bold cursor-pointer transition">
+                            <p class="text-[10px] font-mono">STEP 02</p>
+                            <p class="text-sm">멘토 비교 & 음성 검증</p>
+                        </div>
+                        <div id="step-btn-3" onclick="jumpToStep(3)" class="step-btn p-3 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-500 font-bold cursor-pointer transition">
+                            <p class="text-[10px] font-mono">STEP 03</p>
+                            <p class="text-sm">P2P 1:1 라이브 화상 자문</p>
+                        </div>
+                        <div id="step-btn-4" onclick="jumpToStep(4)" class="step-btn p-3 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-500 font-bold cursor-pointer transition">
+                            <p class="text-[10px] font-mono">STEP 04</p>
+                            <p class="text-sm">후기 수정 & 평점 등록</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-slate-900 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300">
+                        <p class="text-[10px] text-slate-500 font-mono mb-1">CURRENT USER PROFILE</p>
+                        <p class="font-bold text-white" id="current-user-display"><i class="fa-solid fa-user-astronaut text-cyan-400 mr-1.5"></i>이현우 (멘티 / 기계공학전공)</p>
+                    </div>
+                </div>
+
+                <!-- Right Step Content View -->
+                <div class="lg:col-span-8 p-6 md:p-8 flex flex-col justify-between min-h-[560px]">
+                    
+                    <!-- STEP 1 DISPLAY: DYNAMIC SECTOR HIGHLIGHT SELECTION FIX -->
+                    <div id="view-step-1" class="step-view space-y-5">
+                        <div>
+                            <span class="text-[10px] font-mono bg-cyan-950 text-cyan-400 border border-cyan-800 px-2 py-0.5 rounded">SELECT MENTOR FIELD</span>
+                            <h3 class="text-lg md:text-xl font-bold text-white mt-2">어떤 전문 자문 분야가 필요하신가요?</h3>
+                            <p class="text-xs text-slate-400 mt-1">원하시는 카드를 클릭하면 하이라이트 배경 및 보더가 즉시 이동합니다.</p>
+                        </div>
+
+                        <!-- Interactive Selector Cards Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="sector-cards-container">
+                            
+                            <!-- Card Option 1 (Default Selected) -->
+                            <div onclick="selectSector(this)" class="sector-card cursor-pointer p-4 rounded-xl border border-cyan-500/80 bg-cyan-950/40 text-white transition-all duration-200 neon-border">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-mono font-bold text-cyan-400">01. 공공기관/NCS 전공면접</span>
+                                    <i class="fa-solid fa-circle-check text-cyan-400 check-icon text-sm"></i>
+                                </div>
+                                <p class="text-xs text-slate-300 mt-2">기계/전자/전기 원론 이론 및 전공 질의응답 완벽 대비</p>
+                            </div>
+
+                            <!-- Card Option 2 -->
+                            <div onclick="selectSector(this)" class="sector-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-400 transition-all duration-200 hover:border-slate-700">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-mono font-bold text-slate-300">02. 대기업/실무 자소서 첨삭</span>
+                                    <i class="fa-solid fa-circle text-slate-800 check-icon text-sm"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-2">은퇴 1~3년 차 전 임원 출신 임면접 대비 피드백</p>
+                            </div>
+
+                            <!-- Card Option 3 -->
+                            <div onclick="selectSector(this)" class="sector-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-400 transition-all duration-200 hover:border-slate-700">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-mono font-bold text-slate-300">03. R&D / 논문 심화 연구자문</span>
+                                    <i class="fa-solid fa-circle text-slate-800 check-icon text-sm"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-2">전직 연구위원 및 교수의 심화 연구 노하우 전달</p>
+                            </div>
+
+                            <!-- Card Option 4 -->
+                            <div onclick="selectSector(this)" class="sector-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-400 transition-all duration-200 hover:border-slate-700">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-xs font-mono font-bold text-slate-300">04. 해외 취업 / 기술 서류</span>
+                                    <i class="fa-solid fa-circle text-slate-800 check-icon text-sm"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-2">글로벌 엔지니어링 실무진의 직무 검증 컨설팅</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- STEP 2 DISPLAY: TTS VOICE AUDITION -->
+                    <div id="view-step-2" class="step-view hidden space-y-5">
+                        <div>
+                            <span class="text-[10px] font-mono bg-violet-950 text-violet-400 border border-violet-800 px-2 py-0.5 rounded">VOICE VERIFICATION</span>
+                            <h3 class="text-lg md:text-xl font-bold text-white mt-2">추천 멘토 비교 & 15초 음성 검증</h3>
+                            <p class="text-xs text-slate-400 mt-1">음성 재생 버튼을 클릭하여 멘토의 실제 브라우저 TTS 목소리를 청취하세요.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="border border-slate-800 bg-slate-950 p-4 rounded-xl space-y-3 relative hover:border-cyan-500/50 transition">
+                                <span class="absolute top-3 right-3 text-[10px] font-mono bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800">은퇴 1년차</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-cyan-500 text-slate-950 flex items-center justify-center font-bold text-lg">김</div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-white">김명식 멘토 (62세)</h4>
+                                        <p class="text-xs text-cyan-400">前 H중공업 기계설계 수석연구원</p>
+                                    </div>
+                                </div>
+                                <button onclick="speakVoice('김명식', '반갑습니다. 김명식 멘토입니다. 30년간 현장에서 익힌 노하우를 90분 동안 전수해 드리겠습니다.')" class="w-full bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-800/80 text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-volume-high text-cyan-400 animate-pulse"></i> 15초 실제 목소리 듣기
+                                </button>
+                            </div>
+
+                            <div class="border border-slate-800 bg-slate-950 p-4 rounded-xl space-y-3 relative hover:border-violet-500/50 transition">
+                                <span class="absolute top-3 right-3 text-[10px] font-mono bg-violet-950 text-violet-400 px-2 py-0.5 rounded border border-violet-800">은퇴 2년차</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-violet-500 text-white flex items-center justify-center font-bold text-lg">박</div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-white">박성철 멘토 (64세)</h4>
+                                        <p class="text-xs text-violet-400">前 S전자 기계기술 부사장</p>
+                                    </div>
+                                </div>
+                                <button onclick="speakVoice('박성철', '안녕하세요. 박성철입니다. 지원자님의 자소서 스토리와 면접 자신감을 확 바꿔드리겠습니다.')" class="w-full bg-slate-900 hover:bg-slate-800 text-violet-400 border border-violet-800/80 text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-volume-high text-violet-400 animate-pulse"></i> 15초 실제 목소리 듣기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3 DISPLAY: FUTURISTIC P2P ZOOM VIDEO ROOM (MATCHING USER'S IMAGE LAYOUT) -->
+                    <div id="view-step-3" class="step-view hidden space-y-4">
+                        
+                        <!-- P2P Online Connection Bar -->
+                        <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 font-mono text-[11px]">MY ROOM ID:</span>
+                                <input type="text" id="my-peer-id" readonly placeholder="연결중..." class="bg-slate-900 border border-slate-700 text-cyan-400 font-mono font-bold px-2 py-1 rounded w-36 text-center outline-none">
+                                <button onclick="copyMyId()" class="bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded font-bold transition">복사</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="remote-peer-id" placeholder="타 기기/탭의 ID 입력" class="bg-slate-900 border border-slate-700 text-white px-2.5 py-1 rounded w-40 outline-none focus:border-cyan-500">
+                                <button onclick="connectToPeer()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 py-1 rounded font-bold transition neon-glow-cyan">화상 연결</button>
+                            </div>
+                        </div>
+
+                        <!-- Connection Status Bar (NEW) -->
+                        <div id="connection-status" class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-[11px] font-mono text-slate-400 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-slate-600" id="status-dot"></span>
+                            <span id="status-text">초기화 대기 중...</span>
+                        </div>
+
+                        <!-- HIGH-TECH HUD VIDEO CALL CONTAINER -->
+                        <div class="bg-slate-950 rounded-2xl relative aspect-video flex flex-col justify-between overflow-hidden border border-cyan-500/30 neon-border">
+                            
+                            <!-- CENTER: MENTOR VIDEO MAIN VIEW -->
+                            <div class="w-full h-full relative flex items-center justify-center bg-slate-950">
+                                <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                                
+                                <div id="remote-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 text-white p-4 text-center">
+                                    <div class="w-20 h-20 rounded-full bg-cyan-950 border border-cyan-500/50 flex items-center justify-center mb-3 neon-glow-cyan">
+                                        <i class="fa-solid fa-user-tie text-3xl text-cyan-400"></i>
+                                    </div>
+                                    <p class="font-bold text-sm text-white">김명식 멘토 (상대방)</p>
+                                    <p class="text-xs text-slate-500 mt-1">상단에서 타 탭/기기의 방 ID를 입력하여 연결하세요.</p>
+                                </div>
+
+                                <div class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-2 border border-slate-700">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> ONLINE LIVE
+                                </div>
+                            </div>
+
+                            <!-- BOTTOM OVERLAY CONTROL BAR (Exact layout match to user image) -->
+                            <div class="absolute bottom-0 inset-x-0 bg-slate-950/90 backdrop-blur-md px-4 py-3 flex items-center justify-between border-t border-slate-800">
+                                
+                                <!-- Left PIP: User's Own Camera Small Screen -->
+                                <div class="flex items-center gap-2">
+                                    <div class="w-20 h-14 bg-slate-900 rounded-lg border border-cyan-500/60 overflow-hidden relative shadow-lg">
+                                        <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                                        <span class="absolute bottom-0.5 left-1 bg-slate-950/80 text-cyan-400 text-[8px] px-1 rounded font-mono">MY WEBCAM</span>
+                                    </div>
+                                </div>
+
+                                <!-- Right Control Buttons -->
+                                <div class="flex items-center gap-2">
+                                    <button onclick="toggleAudio()" id="btn-audio" class="bg-slate-800 hover:bg-slate-700 text-white w-9 h-9 rounded-xl flex items-center justify-center transition border border-slate-700">
+                                        <i class="fa-solid fa-microphone text-xs"></i>
+                                    </button>
+
+                                    <button onclick="toggleCamera()" id="btn-camera" class="bg-slate-800 hover:bg-slate-700 text-white w-9 h-9 rounded-xl flex items-center justify-center transition border border-slate-700">
+                                        <i class="fa-solid fa-video text-xs"></i>
+                                    </button>
+
+                                    <button onclick="toggleRecording()" id="btn-record" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 h-9 rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
+                                        <i class="fa-solid fa-circle text-[10px]"></i> <span id="record-text">녹화</span>
+                                    </button>
+
+                                    <button onclick="generateAiReport()" class="bg-violet-600 hover:bg-violet-500 text-white px-3 h-9 rounded-xl font-bold text-xs flex items-center gap-1.5 transition neon-glow-violet">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> AI 분석
+                                    </button>
+
+                                    <button onclick="leaveRoom()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 h-9 rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
+                                        <i class="fa-solid fa-phone-slash"></i> 종료
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Feedback Output Modal Box -->
+                        <div id="ai-report-box" class="hidden bg-slate-950 border border-emerald-500/40 p-4 rounded-xl text-xs space-y-1.5">
+                            <div class="flex items-center justify-between font-bold text-emerald-400 border-b border-slate-800 pb-1.5">
+                                <span><i class="fa-solid fa-file-invoice mr-1.5"></i>AI 실시간 1장 요약 피드백 리포트</span>
+                                <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono">COMPLETE</span>
+                            </div>
+                            <p class="text-slate-300">• <strong>면접 답변 강점:</strong> 전공 원론에 대한 명확한 이해도 및 직무 논리 구조 탁월.</p>
+                            <p class="text-slate-300">• <strong>보완 과제:</strong> H중공업 지원 동기 답변 시 구체적인 기계 안전관리 경험 추가 권장.</p>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4 DISPLAY: EDITABLE REVIEW & STAR RATING -->
+                    <div id="view-step-4" class="step-view hidden space-y-5">
+                        <div>
+                            <span class="text-[10px] font-mono bg-cyan-950 text-cyan-400 border border-cyan-800 px-2 py-0.5 rounded">REVIEW & RATING</span>
+                            <h3 class="text-lg md:text-xl font-bold text-white mt-2">상담 만족도 평점 & 후기 작성/수정</h3>
+                            <p class="text-xs text-slate-400 mt-1">별점과 리뷰 내용을 자유롭게 수정하여 저장하실 수 있습니다.</p>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">별점 변경 (클릭하여 조절)</label>
+                                <div class="flex gap-1 text-amber-400 text-2xl cursor-pointer" id="star-rating-container">
+                                    <i class="fa-solid fa-star star-btn" onclick="setRating(1)"></i>
+                                    <i class="fa-solid fa-star star-btn" onclick="setRating(2)"></i>
+                                    <i class="fa-solid fa-star star-btn" onclick="setRating(3)"></i>
+                                    <i class="fa-solid fa-star star-btn" onclick="setRating(4)"></i>
+                                    <i class="fa-solid fa-star star-btn" onclick="setRating(5)"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">후기 내용 작성 / 수정</label>
+                                <textarea id="review-textarea" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-white outline-none focus:border-cyan-500" rows="3">현직을 은퇴하신 지 얼마 안 되셔서 대기업 면접관들이 실제로 어떤 대답을 원하는지 너무 정확히 짚어주셨습니다!</textarea>
+                            </div>
+                            <button onclick="saveReview()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition neon-glow-cyan">
+                                수정된 후기 저장하기
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Step Buttons -->
+                    <div class="pt-4 border-t border-slate-800/80 flex justify-between items-center">
+                        <button id="prev-btn" onclick="moveStep(-1)" class="px-4 py-2 text-xs font-bold text-slate-600 cursor-not-allowed" disabled>이전 단계</button>
+                        <button id="next-btn" onclick="moveStep(1)" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-xl transition neon-glow-cyan">다음 단계 이동 <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 7P STRATEGY -->
+        <section id="tab-strategy" class="tab-content hidden space-y-6">
+            <h2 class="text-xl font-bold text-white">서비스 7P Mix & 비즈니스 모델 캔버스(BMC)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><strong class="text-cyan-400 block mb-1">1. Product</strong>은퇴 1~3년 차 90분 자문, AI 음성 프로필, AI 리포트.</div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><strong class="text-cyan-400 block mb-1">2. Price</strong>90분 세션당 35,000원, 거래 수수료 12%.</div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><strong class="text-cyan-400 block mb-1">3. Place</strong>웹/모바일 PWA 및 대학교 취업지원센터 제휴.</div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl"><strong class="text-cyan-400 block mb-1">4. Promotion</strong>22~32세 취준생 타깃 메타/검색 CPC 광고.</div>
+            </div>
+        </section>
+
+        <!-- TAB 3: BEP CALCULATOR -->
+        <section id="tab-calculator" class="tab-content hidden space-y-6">
+            <h2 class="text-xl font-bold text-white">손익분기점(BEP) & CPC 타깃 광고 수익 시뮬레이터</h2>
+            <div class="bg-slate-900 border border-cyan-500/30 text-white p-6 rounded-2xl neon-border">
+                <p class="text-xs text-cyan-400 font-mono font-bold">ESTIMATED REVENUE</p>
+                <h3 class="text-3xl font-extrabold mt-1 text-white">월 4,125,000 원</h3>
+                <p class="text-xs text-slate-400 mt-2">MAU 10,000명 / CPC 클릭률 3.5% / B2G 연계 적용 시 손익분기 달성 완료</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-600">
+        © 2026 90m Platform. All rights reserved.
+    </footer>
+
+    <!-- JS ENGINE LOGIC -->
+    <script>
+        let currentStep = 1;
+        let localStream = null;
+        let peer = null;
+        let currentCall = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let isRecording = false;
+        let currentRating = 5;
+        let currentUser = { name: '이현우', role: '멘티', email: 'lee@example.com' };
+
+        // --- Connection status helper (NEW) ---
+        function setStatus(text, colorClass) {
+            const dot = document.getElementById('status-dot');
+            const label = document.getElementById('status-text');
+            if (!dot || !label) return;
+            dot.className = 'w-2 h-2 rounded-full ' + colorClass;
+            label.innerText = text;
+        }
+
+        // 1. Dynamic Sector Selector Card Highlight Switch
+        function selectSector(selectedCard) {
+            const allCards = document.querySelectorAll('.sector-card');
+            
+            allCards.forEach(card => {
+                card.className = "sector-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-400 transition-all duration-200 hover:border-slate-700";
+                const checkIcon = card.querySelector('.check-icon');
+                if (checkIcon) {
+                    checkIcon.className = "fa-solid fa-circle text-slate-800 check-icon text-sm";
+                }
+                const cardTitle = card.querySelector('span');
+                if (cardTitle) {
+                    cardTitle.className = "text-xs font-mono font-bold text-slate-300";
+                }
+                const cardDesc = card.querySelector('p');
+                if (cardDesc) {
+                    cardDesc.className = "text-xs text-slate-500 mt-2";
+                }
+            });
+
+            selectedCard.className = "sector-card cursor-pointer p-4 rounded-xl border border-cyan-500/80 bg-cyan-950/40 text-white transition-all duration-200 neon-border";
+            const checkIcon = selectedCard.querySelector('.check-icon');
+            if (checkIcon) {
+                checkIcon.className = "fa-solid fa-circle-check text-cyan-400 check-icon text-sm";
+            }
+            const cardTitle = selectedCard.querySelector('span');
+            if (cardTitle) {
+                cardTitle.className = "text-xs font-mono font-bold text-cyan-400";
+            }
+            const cardDesc = selectedCard.querySelector('p');
+            if (cardDesc) {
+                cardDesc.className = "text-xs text-slate-300 mt-2";
+            }
+        }
+
+        // 2. Video Call & PeerJS Initialization (FIXED: TURN server + error handling + status UI)
+        async function initVideoCall() {
+            // HTTPS check — getUserMedia only works on https:// or localhost
+            const isSecure = window.location.protocol === 'https:' ||
+                              window.location.hostname === 'localhost' ||
+                              window.location.hostname === '127.0.0.1';
+            if (!isSecure) {
+                setStatus('HTTPS 환경이 아닙니다. https:// 로 접속해야 카메라/연결이 동작합니다.', 'bg-rose-500');
+            }
+
+            try {
+                if (!localStream) {
+                    setStatus('카메라/마이크 권한 요청 중...', 'bg-amber-400');
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    document.getElementById('local-video').srcObject = localStream;
+                }
+
+                if (!peer) {
+                    setStatus('시그널링 서버에 연결 중...', 'bg-amber-400');
+
+                    // ICE 서버 설정: STUN만으로는 서로 다른 네트워크(각자 다른 와이파이/통신사)에서
+                    // 연결이 실패하는 경우가 많음 -> 무료 TURN 서버(Openrelay)를 추가해서
+                    // NAT/방화벽을 우회할 수 있도록 함
+                    peer = new Peer({
+                        config: {
+                            iceServers: [
+                                { urls: 'stun:stun.l.google.com:19302' },
+                                { urls: 'stun:stun1.l.google.com:19302' },
+                                {
+                                    urls: 'turn:openrelay.metered.ca:80',
+                                    username: 'openrelayproject',
+                                    credential: 'openrelayproject'
+                                },
+                                {
+                                    urls: 'turn:openrelay.metered.ca:443',
+                                    username: 'openrelayproject',
+                                    credential: 'openrelayproject'
+                                },
+                                {
+                                    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                                    username: 'openrelayproject',
+                                    credential: 'openrelayproject'
+                                }
+                            ]
+                        }
+                    });
+
+                    peer.on('open', (id) => {
+                        document.getElementById('my-peer-id').value = id;
+                        setStatus('연결 준비 완료 — 방 ID를 상대방에게 공유하세요.', 'bg-emerald-400');
+                    });
+
+                    peer.on('call', (call) => {
+                        setStatus('상대방이 연결을 시도합니다...', 'bg-amber-400');
+                        call.answer(localStream);
+                        attachCallHandlers(call);
+                    });
+
+                    peer.on('disconnected', () => {
+                        setStatus('시그널링 서버 연결이 끊어졌습니다. 재연결 시도 중...', 'bg-rose-500');
+                        peer.reconnect();
+                    });
+
+                    peer.on('error', (err) => {
+                        console.error('PeerJS error:', err);
+                        let msg = '연결 오류: ' + err.type;
+                        if (err.type === 'peer-unavailable') {
+                            msg = '입력한 방 ID의 상대방을 찾을 수 없습니다. ID를 다시 확인해주세요.';
+                        } else if (err.type === 'unavailable-id') {
+                            msg = 'ID 충돌이 발생했습니다. 새로고침 후 다시 시도해주세요.';
+                        } else if (err.type === 'network' || err.type === 'server-error') {
+                            msg = '네트워크/서버 오류입니다. 인터넷 연결을 확인해주세요.';
+                        } else if (err.type === 'browser-incompatible') {
+                            msg = '이 브라우저는 화상통화(WebRTC)를 지원하지 않습니다.';
+                        }
+                        setStatus(msg, 'bg-rose-500');
+                        alert(msg);
+                    });
+                }
+            } catch (err) {
+                console.error('미디어 접근 오류:', err);
+                let msg = '카메라/마이크 접근 실패: ' + err.message;
+                if (err.name === 'NotAllowedError') {
+                    msg = '카메라/마이크 권한이 거부되었습니다. 브라우저 설정에서 권한을 허용해주세요.';
+                } else if (err.name === 'NotFoundError') {
+                    msg = '카메라 또는 마이크 장치를 찾을 수 없습니다.';
+                } else if (!isSecure) {
+                    msg = 'HTTPS(또는 localhost) 환경에서만 카메라를 사용할 수 있습니다.';
+                }
+                setStatus(msg, 'bg-rose-500');
+            }
+        }
+
+        function attachCallHandlers(call) {
+            currentCall = call;
+            call.on('stream', (remoteStream) => {
+                document.getElementById('remote-video').srcObject = remoteStream;
+                document.getElementById('remote-placeholder').classList.add('hidden');
+                setStatus('연결 성공 — 상담이 진행 중입니다.', 'bg-emerald-400');
+            });
+            call.on('close', () => {
+                document.getElementById('remote-video').srcObject = null;
+                document.getElementById('remote-placeholder').classList.remove('hidden');
+                setStatus('통화가 종료되었습니다.', 'bg-slate-600');
+            });
+            call.on('error', (err) => {
+                console.error('Call error:', err);
+                setStatus('통화 중 오류가 발생했습니다: ' + err, 'bg-rose-500');
+            });
+        }
+
+        function connectToPeer() {
+            const remoteId = document.getElementById('remote-peer-id').value.trim();
+            if (!remoteId) return alert('상대방 접속 방 ID를 입력하세요.');
+            if (!localStream || !peer) return alert('먼저 카메라 권한 및 연결 초기화가 완료되어야 합니다.');
+
+            setStatus('상대방(' + remoteId + ')에게 연결 시도 중...', 'bg-amber-400');
+            const call = peer.call(remoteId, localStream);
+            if (!call) {
+                setStatus('연결을 시작하지 못했습니다. 초기화가 끝났는지 확인해주세요.', 'bg-rose-500');
+                return;
+            }
+            attachCallHandlers(call);
+        }
+
+        function copyMyId() {
+            const myId = document.getElementById('my-peer-id').value;
+            if (!myId) return alert('아직 방 ID가 생성되지 않았습니다. 잠시 후 다시 시도해주세요.');
+            navigator.clipboard.writeText(myId);
+            alert('방 ID가 복사되었습니다. 다른 탭이나 기기에서 붙여넣어 연결하세요!');
+        }
+
+        function toggleAudio() {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    document.getElementById('btn-audio').classList.toggle('bg-rose-600');
+                    alert(audioTrack.enabled ? '마이크 켜짐' : '마이크 음소거');
+                }
+            }
+        }
+
+        function toggleCamera() {
+            if (localStream) {
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    document.getElementById('btn-camera').classList.toggle('bg-rose-600');
+                    alert(videoTrack.enabled ? '카메라 켜짐' : '카메라 꺼짐');
+                }
+            }
+        }
+
+        function toggleRecording() {
+            if (!isRecording) {
+                recordedChunks = [];
+                const streamToRecord = document.getElementById('remote-video').srcObject || localStream;
+                mediaRecorder = new MediaRecorder(streamToRecord);
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '90m_상담녹화파일.webm';
+                    a.click();
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('record-text').innerText = '녹화 중...';
+                document.getElementById('btn-record').className = "bg-rose-600 text-white px-3 h-9 rounded-xl font-bold text-xs flex items-center gap-1.5 animate-pulse";
+                alert('상담 화상 녹화가 시작되었습니다.');
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                document.getElementById('record-text').innerText = '녹화';
+                document.getElementById('btn-record').className = "bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 h-9 rounded-xl font-bold text-xs flex items-center gap-1.5 transition";
+                alert('녹화가 종료되어 webm 영상 파일이 저장되었습니다.');
+            }
+        }
+
+        function leaveRoom() {
+            if (currentCall) currentCall.close();
+            document.getElementById('remote-video').srcObject = null;
+            document.getElementById('remote-placeholder').classList.remove('hidden');
+            setStatus('통화를 종료했습니다.', 'bg-slate-600');
+            alert('화상 통화가 종료되었습니다.');
+        }
+
+        function generateAiReport() {
+            document.getElementById('ai-report-box').classList.remove('hidden');
+        }
+
+        function speakVoice(name, text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                utterance.rate = 0.95;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function setRating(rating) {
+            currentRating = rating;
+            const stars = document.querySelectorAll('#star-rating-container .star-btn');
+            stars.forEach((star, idx) => {
+                star.className = idx < rating ? 'fa-solid fa-star star-btn text-amber-400' : 'fa-solid fa-star star-btn text-slate-700';
+            });
+        }
+
+        function saveReview() {
+            alert(`[수정 완료] 평점: ${currentRating}점 / 리뷰: "${document.getElementById('review-textarea').value}"`);
+        }
+
+        // Auth Modals
+        function openAuthModal(mode) {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            switchAuthTab(mode);
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+        }
+
+        function switchAuthTab(mode) {
+            if (mode === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-signup').classList.add('hidden');
+                document.getElementById('tab-auth-login').className = "w-1/2 pb-3 font-bold text-xs text-cyan-400 border-b-2 border-cyan-400";
+                document.getElementById('tab-auth-signup').className = "w-1/2 pb-3 font-bold text-xs text-slate-500";
+            } else {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-signup').classList.remove('hidden');
+                document.getElementById('tab-auth-signup').className = "w-1/2 pb-3 font-bold text-xs text-cyan-400 border-b-2 border-cyan-400";
+                document.getElementById('tab-auth-login').className = "w-1/2 pb-3 font-bold text-xs text-slate-500";
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            currentUser = { name: email.split('@')[0], role: '멘티', email: email };
+            updateUserUI();
+            closeAuthModal();
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            currentUser = { name: name, role: '멘티', email: email };
+            updateUserUI();
+            closeAuthModal();
+            alert(`${name} 멘티님, 환영합니다!`);
+        }
+
+        function updateUserUI() {
+            document.getElementById('auth-header-container').innerHTML = `
+                <span class="text-xs font-bold text-cyan-400"><i class="fa-solid fa-user-astronaut mr-1"></i>${currentUser.name} 멘티님</span>
+            `;
+            document.getElementById('current-user-display').innerHTML = `<i class="fa-solid fa-user-astronaut text-cyan-400 mr-1.5"></i>${currentUser.name} (멘티 / ${currentUser.email})`;
+        }
+
+        // Navigation Steps
+        function jumpToStep(step) {
+            currentStep = step;
+            moveStep(0);
+        }
+
+        function moveStep(dir) {
+            currentStep += dir;
+            if(currentStep < 1) currentStep = 1;
+            if(currentStep > 4) currentStep = 4;
+
+            document.querySelectorAll('.step-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-step-' + currentStep).classList.remove('hidden');
+
+            if(currentStep === 3) initVideoCall();
+
+            for(let i=1; i<=4; i++) {
+                let btn = document.getElementById('step-btn-' + i);
+                btn.className = (i === currentStep)
+                    ? "step-btn p-3 rounded-xl border border-cyan-500/50 bg-cyan-950/30 text-cyan-300 font-bold cursor-pointer transition neon-border"
+                    : "step-btn p-3 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-500 font-bold cursor-pointer transition";
+            }
+
+            document.getElementById('step-indicator').innerText = `STEP ${currentStep} / 4`;
+            document.getElementById('prev-btn').disabled = (currentStep === 1);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-cyan-400', 'font-bold', 'border-b-2', 'border-cyan-400');
+                el.classList.add('text-slate-400');
+            });
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

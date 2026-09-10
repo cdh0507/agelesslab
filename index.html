@@ -1943,15 +1943,20 @@
                     });
 
                     peer.on('open', async (id) => {
-                        setStatus(currentUser.role === 'mentor' ? '준비 완료 — 멘티 입장을 기다리는 중' : '준비 완료 — 승인을 기다리는 중', 'bg-emerald-400');
+                        // 역할(profiles.role) 값이 아니라, 예약 방 정보(mentor_id) 자체로 "내가 이 방의 멘토인지"를
+                        // 직접 판단한다 — 프로필 읽기에 문제가 있어도 통화 연결만큼은 항상 정확하게 동작하도록.
+                        const isMentorOfThisRoom = currentRoom && currentRoom.mentor_id === currentUser.id;
+                        setStatus(isMentorOfThisRoom ? '준비 완료 — 멘티 입장을 기다리는 중' : '준비 완료 — 승인을 기다리는 중', 'bg-emerald-400');
                         // 멘토라면 방 정보에 내 peer id를 기록해서 멘티가 연결할 수 있게 한다
-                        if (currentUser.role === 'mentor' && currentRoom) {
-                            const { data } = await supabaseClient.from('live_rooms').update({ room_peer_id: id }).eq('id', currentRoom.id).select().single();
+                        if (isMentorOfThisRoom) {
+                            const { data, error } = await supabaseClient.from('live_rooms').update({ room_peer_id: id }).eq('id', currentRoom.id).select().single();
+                            if (error) console.error('room_peer_id 저장 실패:', error);
                             if (data) currentRoom = data;
                         }
-                        // 멘티도 자신의 peer id를 기록해두면, 관리자가 관전 시 멘티 화면에도 직접 연결할 수 있다
-                        if (currentUser.role !== 'mentor' && currentUser.role !== 'admin' && currentRoom) {
-                            const { data } = await supabaseClient.from('live_rooms').update({ mentee_peer_id: id }).eq('id', currentRoom.id).select().single();
+                        // 멘토가 아니라면(=멘티) 자신의 peer id를 기록해두면, 관리자가 관전 시 멘티 화면에도 직접 연결할 수 있다
+                        else if (currentRoom) {
+                            const { data, error } = await supabaseClient.from('live_rooms').update({ mentee_peer_id: id }).eq('id', currentRoom.id).select().single();
+                            if (error) console.error('mentee_peer_id 저장 실패:', error);
                             if (data) currentRoom = data;
                         }
                     });
@@ -1981,7 +1986,22 @@
 
         // 멘티가 승인된 순간, 저장해둔 멘토의 peer id로 실제 통화를 건다
         function connectToMentor(mentorPeerId) {
-            if (!peer || !localStream || !mentorPeerId) return;
+            console.log('[통화] connectToMentor 호출됨. peer 준비:', !!peer, '/ 로컬영상 준비:', !!localStream, '/ 멘토 peer id:', mentorPeerId);
+            if (!mentorPeerId) {
+                setStatus('멘토의 연결 번호를 아직 받지 못했습니다. 잠시 후 다시 시도해주세요.', 'bg-rose-500');
+                showToast('멘토가 아직 상담방을 완전히 열지 못한 상태예요. 몇 초 후 자동으로 다시 시도합니다.', 'error');
+                // room_peer_id가 아직 안 채워졌을 수 있으니, 최신 방 정보를 다시 읽어서 몇 초 뒤 재시도
+                setTimeout(async () => {
+                    if (!currentRoom) return;
+                    const { data } = await supabaseClient.from('live_rooms').select('*').eq('id', currentRoom.id).maybeSingle();
+                    if (data) { currentRoom = data; if (data.room_peer_id) connectToMentor(data.room_peer_id); }
+                }, 2500);
+                return;
+            }
+            if (!peer || !localStream) {
+                setStatus('내 카메라 연결이 아직 준비되지 않았습니다.', 'bg-rose-500');
+                return;
+            }
             setStatus('멘토에게 연결 중...', 'bg-amber-400');
             const call = peer.call(mentorPeerId, localStream);
             attachCallHandlers(call);
@@ -2191,7 +2211,7 @@
             stopAllMediaAndPeer();
             document.getElementById('remote-placeholder').classList.remove('hidden');
 
-            if (currentUser.role === 'mentor' && currentRoom) {
+            if (currentRoom && currentRoom.mentor_id === currentUser.id) {
                 await supabaseClient.rpc('close_room', { p_room_id: currentRoom.id });
             }
             teardownRoomChannel();
